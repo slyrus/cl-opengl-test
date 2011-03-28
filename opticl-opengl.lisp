@@ -23,11 +23,18 @@
     (gl:tex-parameter :texture-2d :texture-min-filter :linear-mipmap-linear)
     (gl:tex-parameter :texture-2d :texture-mag-filter :linear)
     
-    (with-accessors ((image image)) win
-      (opticl:with-image-bounds (height width) image
-        (gl:tex-image-2d :texture-2d 0 :rgb width height 0 :rgb :unsigned-byte
+    (with-accessors ((image image)
+                     (window-width glut:width)
+                     (window-height glut:height)) win
+      (opticl:with-image-bounds (image-height image-width channels) image
+        (gl:tex-image-2d :texture-2d 0 :rgb image-width image-height 0 
+                         (case channels
+                           (3 :rgb)
+                           (4 :rgba))
+                         :unsigned-byte
                          (make-array (reduce #'* (array-dimensions image))
-                                     :element-type '(unsigned-byte 8) :displaced-to image))
+                                     :element-type '(unsigned-byte 8)
+                                     :displaced-to image))
 
         (gl:generate-mipmap-ext :texture-2d)
         (gl:bind-texture :texture-2d 0)
@@ -39,7 +46,10 @@
         
         ;; setup depth-buffer and attach it to the framebuffer
         (gl:bind-renderbuffer-ext :renderbuffer-ext depthbuffer)
-        (gl:renderbuffer-storage-ext :renderbuffer-ext :depth-component24 width height)
+        (gl:renderbuffer-storage-ext :renderbuffer-ext
+                                     :depth-component24
+                                     window-width
+                                     window-height)
         (gl:framebuffer-renderbuffer-ext :framebuffer-ext
                                          :depth-attachment-ext
                                          :renderbuffer-ext
@@ -59,16 +69,16 @@
   (gl:bind-framebuffer-ext :framebuffer-ext 0)
 
   (gl:viewport 0 0 (glut:width win) (glut:height win))
-  (gl:clear-color 0 0 0 0)       ; background will be black
-  (gl:clear-depth 1)              ; clear buffer to maximum depth
+  (gl:clear-color 0 0 0.2 0)
+  (gl:clear-depth 1)
   (gl:clear :color-buffer-bit :depth-buffer-bit)
   
 
   (with-accessors ((image image)) win
     (opticl:with-image-bounds (height width) image
     
-      (gl:viewport (/ (- (glut:width win) width) 2)
-                   (/ (- (glut:height win) height) 2)
+      (gl:viewport (max 0 (/ (- (glut:width win) width) 2))
+                   (max 0 (/ (- (glut:height win) height) 2))
                    width height)
 
       (let ((texture (texture win)))  
