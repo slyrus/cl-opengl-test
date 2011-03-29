@@ -5,17 +5,21 @@
   ((texture :accessor texture)
    (framebuffer :accessor framebuffer)
    (image :accessor image :initarg :image)
-   (dirty :accessor dirty))
+   (dirty :accessor dirty :initarg :dirty)
+   (fit-to-window :accessor fit-to-window :initarg :fit-to-window))
   (:default-initargs :image nil :height 128 :width 128
                      :dirty nil
+                     :fit-to-window nil
                      :title "Opticl Image Viewer"
                      :pos-x 100 :pos-y 100))
 
-(defun make-opticl-window (image)
-  (make-instance 'opticl-window
-                 :height (array-dimension image 0)
-                 :width (array-dimension image 1)
-                 :image image))
+(defun make-opticl-window (image &key (fit-to-window nil fit-to-window-supplied-p))
+  (apply #'make-instance 'opticl-window
+         :height (array-dimension image 0)
+         :width (array-dimension image 1)
+         :image image
+         (when fit-to-window-supplied-p
+           `(:fit-to-window ,fit-to-window))))
 
 (defun draw (window)
   (gl:load-identity)
@@ -23,11 +27,14 @@
   (gl:clear-color 0 0 0.2 0)
   (gl:clear-depth 1)
   (gl:clear :color-buffer-bit :depth-buffer-bit)
-  (with-accessors ((image image)) window
+  (with-accessors ((image image)
+                   (fit-to-window fit-to-window)) window
     (opticl:with-image-bounds (height width) image
-      (gl:viewport (max 0 (/ (- (glut:width window) width) 2))
-                   (max 0 (/ (- (glut:height window) height) 2))
-                   width height)
+      (if fit-to-window
+          (gl:viewport 0 0 (glut:width window) (glut:height window))
+          (gl:viewport (max 0 (/ (- (glut:width window) width) 2))
+                       (max 0 (/ (- (glut:height window) height) 2))
+                       width height))
       (let ((texture (texture window)))  
         (gl:bind-texture :texture-2d texture)
         (gl:enable :texture-2d)
