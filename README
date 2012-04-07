@@ -1,0 +1,4 @@
+
+Some code for messing around with cl-opengl in SBCL (on MacOS in particular).
+
+See the example in scratch.lisp. Note that the demo reqires cl-glut and opticl.
