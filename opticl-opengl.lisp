@@ -81,9 +81,3 @@
     (setf dirty t)))
 
 
-#+nil
-(on-initial-thread (:wait nil)
-  (let ((image (opticl:make-8-bit-rgb-image 256 257)))
-    (opticl:draw-rectangle image 50 50 200 200 255 0 0)
-    (glut:display-window (make-opticl-window image))))
-
