@@ -4,7 +4,7 @@
   :author "Cyrus Harmon <ch-lisp@bobobeach.com>"
   :licence "BSD"
   :default-component-class cl-source-file
-  :depends-on (opticl)
+  :depends-on (opticl cl-glut)
   :serial t
   :components
   ((:file "package")
